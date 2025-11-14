@@ -28,7 +28,7 @@ public class CurrencyScheduler {
                     .orElse(null);
 
             if (usd != null && usd.getCourse() > 95.0) {
-                bot.sendMsg(NOTIFY_CHAT_ID,
+                bot.sendMessage(NOTIFY_CHAT_ID,
                         "ВНИМАНИЕ! USD вырос!\n" +
                                 "Текущий курс: " + usd.getCourse() + " ₽");
             }
