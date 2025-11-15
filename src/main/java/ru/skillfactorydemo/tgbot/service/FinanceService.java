@@ -43,7 +43,7 @@ public class FinanceService {
             return "Ошибка: неверный формат суммы. Используйте цифры, например: 1500.50";
         }
 
-        // 2. Обработка операции
+
         try {
             if (ADD_INCOME.equalsIgnoreCase(operationType)) {
                 Income income = new Income();
@@ -54,7 +54,7 @@ public class FinanceService {
                 return "Доход в размере " + amount + " ₽ успешно добавлен!";
             }
 
-            // По умолчанию — расход
+            // расход
             Spend spend = new Spend();
             spend.setChatId(chatId);
             spend.setSpend(amount);
@@ -71,7 +71,7 @@ public class FinanceService {
         }
     }
 
-    // Дополнительно: можно добавить метод для /addspend
+
     public String addIncome(String price, Long chatId) {
         return addFinanceOperation(ADD_INCOME, price, chatId);
     }

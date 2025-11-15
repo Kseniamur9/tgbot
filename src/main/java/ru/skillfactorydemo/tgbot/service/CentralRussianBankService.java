@@ -14,13 +14,13 @@ import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.List;
 
-//Данный класс наследуется от WebServiceTemplate, который предоставляет удобный способ взаимодействия с SOAP веб сервисами
+
 public class CentralRussianBankService extends WebServiceTemplate {
-    //Тут случается некоторая магия Spring и в момент запуска вашего приложения, сюда поставляется значение из application.properties или application.yml
+
     @Value("${cbr.api.url}")
     private String cbrApiUrl;
 
-    //Создаем метод получения данных
+
     public List<ValuteCursOnDate> getCurrenciesFromCbr() throws DatatypeConfigurationException {
         final GetCursOnDateXml getCursOnDateXML = new GetCursOnDateXml();
         GregorianCalendar cal = new GregorianCalendar();

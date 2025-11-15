@@ -1,24 +1,24 @@
 language: java
-
-# Указываем JDK 17 (OpenJDK — единственный рабочий вариант)
 jdk:
   - openjdk17
 
-# Полностью пропускаем тесты (и их компиляцию)
-script:
-  - mvn clean install -Dmaven.test.skip=true
-
-# Кэшируем зависимости Maven (ускоряет сборку в 5–10 раз)
+# Кэш для Maven зависимостей
 cache:
   directories:
-    - $HOME/.m2/repository
+    - $HOME/.m2
 
-# Отключаем уведомления по email (по желанию)
-notifications:
-  email: false
+# Сборка и тесты
+script:
+  - mvn clean compile
+  - mvn test
 
-# Запускать только на ветке main и pull request
+# Сборка только main ветки
 branches:
   only:
     - main
-    - master
+
+# Уведомления
+notifications:
+  email:
+    on_success: never
+    on_failure: always

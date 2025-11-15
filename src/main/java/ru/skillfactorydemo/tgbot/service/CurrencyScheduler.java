@@ -15,7 +15,7 @@ public class CurrencyScheduler {
     private final CentralRussianBankService cbrService;
     private final CurrencyBot bot;
 
-    // Замените на ваш chatId (узнайте через /getid в боте)
+
     private final long NOTIFY_CHAT_ID = 123456789L;
 
     @Scheduled(fixedRate = 3600000) // каждые 60 минут
