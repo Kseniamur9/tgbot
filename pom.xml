@@ -23,14 +23,13 @@
 	</parent>
 
 	<dependencies>
-
 		<!-- ВЕБ-СЕРВЕР -->
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-web</artifactId>
 		</dependency>
 
-		<!-- SOAP (Spring Web Services) — ОБЯЗАТЕЛЬНО ДЛЯ AppConfig -->
+		<!-- SOAP (Spring Web Services) -->
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-web-services</artifactId>
@@ -86,6 +85,13 @@
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-test</artifactId>
 			<scope>test</scope>
+		</dependency>
+
+		<!-- SWAGGER / OPENAPI 3 (springdoc) — РАБОЧИЙ ВАРИАНТ ДЛЯ SPRING BOOT 2.7 -->
+		<dependency>
+			<groupId>org.springdoc</groupId>
+			<artifactId>springdoc-openapi-ui</artifactId>
+			<version>1.8.0</version>
 		</dependency>
 
 	</dependencies>

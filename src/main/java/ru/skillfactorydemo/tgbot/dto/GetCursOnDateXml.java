@@ -2,7 +2,8 @@
 package ru.skillfactorydemo.tgbot.dto;
 
 import lombok.Data;
-import javax.xml.bind.annotation.*;  // ← ЭТОТ ИМПОРТ РАБОТАЕТ!
+
+import javax.xml.bind.annotation.*;
 import javax.xml.datatype.XMLGregorianCalendar;
 
 @XmlRootElement(name = "GetCursOnDateXML", namespace = "http://web.cbr.ru/")

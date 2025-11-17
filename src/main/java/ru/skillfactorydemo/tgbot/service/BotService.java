@@ -34,62 +34,17 @@ public class BotService extends TelegramLongPollingBot {
     private final FinanceService financeService;
     private final ActiveChatRepository activeChatRepository;
 
+    private Map<Long, List<String>> previousCommands = new ConcurrentHashMap<>();
+
     @Value("${bot.api.key}")
     private String apiKey;
 
     @Value("${bot.name}")
     private String name;
 
-    private Map<Long, List<String>> previousCommands = new ConcurrentHashMap<>();
-
-    @Override
-    public void onUpdateReceived(Update update) {
-        Message message = update.getMessage();
-        try {
-            SendMessage response = new SendMessage();
-            Long chatId = message.getChatId();
-            response.setChatId(String.valueOf(chatId));
-            if (CURRENT_RATES.equalsIgnoreCase(message.getText())) {
-                for (ValuteCursOnDate valuteCursOnDate : centralRussianBankService.getCurrenciesFromCbr()) {
-                    response.setText(StringUtils.defaultIfBlank(response.getText(), "") + valuteCursOnDate.getName() + " - " + valuteCursOnDate.getCourse() + "\n");
-                }
-            } else if (ADD_INCOME.equalsIgnoreCase(message.getText())) {
-                response.setText("Отправьте мне сумму полученного дохода");
-            } else if (ADD_SPEND.equalsIgnoreCase(message.getText())) {
-                response.setText("Отправьте мне сумму расходов");
-            } else {
-                response.setText(financeService.addFinanceOperation(getPreviousCommand(message.getChatId()), message.getText(), message.getChatId()));
-            }
-
-            putPreviousCommand(message.getChatId(), message.getText());
-            execute(response);
-            if (activeChatRepository.findActiveChatByChatId(chatId).isEmpty()) {
-                ActiveChat activeChat = new ActiveChat();
-                activeChat.setChatId(chatId);
-                activeChatRepository.save(activeChat);
-            }
-        } catch (Exception e) {
-            log.error("Возникла неизвестная проблема, сообщите пожалуйста администратору", e);
-        }
-    }
-
-
-    public void sendNotificationToAllActiveChats(String message, Set<Long> chatIds) {
-        for (Long id : chatIds) {
-            SendMessage sendMessage = new SendMessage();
-            sendMessage.setChatId(String.valueOf(id));
-            sendMessage.setText(message);
-            try {
-                execute(sendMessage);
-            } catch (TelegramApiException e) {
-                log.error("Не удалось отправить сообщение", e);
-            }
-        }
-    }
-
     @PostConstruct
     public void start() {
-        log.info("username: {}, token: {}", name, apiKey);
+        log.info("Бот запущен: username = {}, token = {}", name, apiKey);
     }
 
     @Override
@@ -102,18 +57,62 @@ public class BotService extends TelegramLongPollingBot {
         return apiKey;
     }
 
-    private void putPreviousCommand(Long chatId, String command) {
-        if (previousCommands.get(chatId) == null) {
-            List<String> commands = new ArrayList<>();
-            commands.add(command);
-            previousCommands.put(chatId, commands);
-        } else {
-            previousCommands.get(chatId).add(command);
+    @Override
+    public void onUpdateReceived(Update update) {
+        Message message = update.getMessage();
+        try {
+            SendMessage response = new SendMessage();
+            Long chatId = message.getChatId();
+            response.setChatId(String.valueOf(chatId));
+
+            if (CURRENT_RATES.equalsIgnoreCase(message.getText())) {
+                for (ValuteCursOnDate valuteCursOnDate : centralRussianBankService.getCurrenciesFromCbr()) {
+                    response.setText(StringUtils.defaultIfBlank(response.getText(), "") + valuteCursOnDate.getName() + " - " + valuteCursOnDate.getCourse() + "\n");
+                }
+            } else if (ADD_INCOME.equalsIgnoreCase(message.getText())) {
+                response.setText("Отправьте мне сумму полученного дохода");
+            } else if (ADD_SPEND.equalsIgnoreCase(message.getText())) {
+                response.setText("Отправьте мне сумму расходов");
+            } else {
+                response.setText(financeService.addFinanceOperation(getPreviousCommand(chatId), message.getText(), chatId));
+            }
+
+            putPreviousCommand(chatId, message.getText());
+            execute(response);
+
+            // Добавляем в активные чаты
+            if (activeChatRepository.findActiveChatByChatId(chatId).isEmpty()) {
+                ActiveChat activeChat = new ActiveChat();
+                activeChat.setChatId(chatId);
+                activeChatRepository.save(activeChat);
+            }
+
+        } catch (TelegramApiException e) {
+            log.error("Ошибка отправки сообщения", e);
+        } catch (Exception e) {
+            log.error("Ошибка при получении данных от ЦБ РФ", e);
         }
     }
 
+    public void sendNotificationToAllActiveChats(String message, Set<Long> chatIds) {
+        for (Long id : chatIds) {
+            SendMessage sendMessage = new SendMessage();
+            sendMessage.setChatId(String.valueOf(id));
+            sendMessage.setText(message);
+            try {
+                execute(sendMessage);
+            } catch (TelegramApiException e) {
+                log.error("Ошибка отправки уведомления", e);
+            }
+        }
+    }
+
+    private void putPreviousCommand(Long chatId, String command) {
+        previousCommands.computeIfAbsent(chatId, k -> new ArrayList<>()).add(command);
+    }
+
     private String getPreviousCommand(Long chatId) {
-        return previousCommands.get(chatId)
-                .get(previousCommands.get(chatId).size() - 1);
+        List<String> commands = previousCommands.get(chatId);
+        return commands != null && !commands.isEmpty() ? commands.get(commands.size() - 1) : "";
     }
 }

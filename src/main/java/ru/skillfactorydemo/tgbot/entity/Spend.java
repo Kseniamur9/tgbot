@@ -20,6 +20,6 @@ public class Spend {
     private BigDecimal spend;
 
     public void setCurrency(String currency) {
-        
+
     }
 }
