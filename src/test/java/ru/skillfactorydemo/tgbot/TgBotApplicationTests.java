@@ -8,6 +8,6 @@ class TgBotApplicationTests {
 
     @Test
     void contextLoads() {
-        // Проверяет, что приложение запускается
+
     }
 }

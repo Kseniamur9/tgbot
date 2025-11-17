@@ -32,7 +32,7 @@ public class CurrencyBot extends TelegramLongPollingBot {
     private final FinanceService financeService;
     private final ActiveChatRepository activeChatRepository;
 
-    // Хранит последнюю команду пользователя
+
     private final Map<Long, String> lastCommand = new ConcurrentHashMap<>();
 
     @Value("${bot.name}")
@@ -138,7 +138,7 @@ public class CurrencyBot extends TelegramLongPollingBot {
         }
     }
 
-    // Для Scheduler
+
     public void sendToAll(String text) {
         activeChatRepository.findAll().forEach(ac -> sendMessage(ac.getChatId(), text));
     }
