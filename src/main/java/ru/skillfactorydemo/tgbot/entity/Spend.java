@@ -18,8 +18,4 @@ public class Spend {
 
     @Column(name = "SPEND")
     private BigDecimal spend;
-
-    public void setCurrency(String currency) {
-
-    }
 }

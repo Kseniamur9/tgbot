@@ -9,7 +9,6 @@ import ru.skillfactorydemo.tgbot.entity.Income;
 import ru.skillfactorydemo.tgbot.entity.Spend;
 import ru.skillfactorydemo.tgbot.repository.IncomeRepository;
 import ru.skillfactorydemo.tgbot.repository.SpendRepository;
-
 import java.math.BigDecimal;
 
 @Service
@@ -17,15 +16,14 @@ import java.math.BigDecimal;
 @Slf4j
 public class FinanceService {
 
-    private static final String ADD_INCOME = "/addincome";
-    private static final String ADD_SPEND = "/addspend";
+    public static final String ADD_INCOME = "/addincome";
+    public static final String ADD_SPEND = "/addspend";
 
     private final IncomeRepository incomeRepository;
     private final SpendRepository spendRepository;
 
     @Transactional
     public String addFinanceOperation(String operationType, String priceStr, Long chatId) {
-        // 1. Проверка входных данных
         if (chatId == null) {
             return "Ошибка: не удалось определить пользователя";
         }
@@ -35,14 +33,13 @@ public class FinanceService {
 
         BigDecimal amount;
         try {
-            amount = new BigDecimal(priceStr.trim());
+            amount = new BigDecimal(priceStr.trim().replace(",", "."));
             if (amount.compareTo(BigDecimal.ZERO) <= 0) {
                 return "Ошибка: сумма должна быть положительной";
             }
         } catch (NumberFormatException e) {
             return "Ошибка: неверный формат суммы. Используйте цифры, например: 1500.50";
         }
-
 
         try {
             if (ADD_INCOME.equalsIgnoreCase(operationType)) {
@@ -54,13 +51,16 @@ public class FinanceService {
                 return "Доход в размере " + amount + " ₽ успешно добавлен!";
             }
 
-            // расход
-            Spend spend = new Spend();
-            spend.setChatId(chatId);
-            spend.setSpend(amount);
-            spendRepository.save(spend);
-            log.info("Добавлен расход: {} руб. для chatId={}", amount, chatId);
-            return "Расход в размере " + amount + " ₽ успешно добавлен!";
+            if (ADD_SPEND.equalsIgnoreCase(operationType)) {
+                Spend spend = new Spend();
+                spend.setChatId(chatId);
+                spend.setSpend(amount);
+                spendRepository.save(spend);
+                log.info("Добавлен расход: {} руб. для chatId={}", amount, chatId);
+                return "Расход в размере " + amount + " ₽ успешно добавлен!";
+            }
+
+            return "Неизвестный тип операции";
 
         } catch (DataIntegrityViolationException e) {
             log.error("Ошибка сохранения в БД", e);
@@ -69,14 +69,5 @@ public class FinanceService {
             log.error("Неизвестная ошибка при добавлении операции", e);
             return "Произошла ошибка. Попробуйте ещё раз.";
         }
-    }
-
-
-    public String addIncome(String price, Long chatId) {
-        return addFinanceOperation(ADD_INCOME, price, chatId);
-    }
-
-    public String addSpend(String price, Long chatId) {
-        return addFinanceOperation(ADD_SPEND, price, chatId);
     }
 }
